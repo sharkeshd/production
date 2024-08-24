@@ -4,15 +4,14 @@ FROM eclipse-temurin:19 AS builder
 # Set the working directory
 WORKDIR /app
 
-# Copy the build files
-COPY . /app
-
-# Install build tools if necessary (e.g., Maven, Gradle)
-# For example, if you're using Gradle:
+# Install Gradle (replace version with the one needed for your project)
 RUN apt-get update && apt-get install -y wget unzip \
     && wget https://services.gradle.org/distributions/gradle-7.6-bin.zip \
     && unzip gradle-7.6-bin.zip -d /opt \
     && ln -s /opt/gradle-7.6/bin/gradle /usr/bin/gradle
+
+# Copy the build files
+COPY . /app
 
 # Build the application
 RUN gradle build --no-daemon
