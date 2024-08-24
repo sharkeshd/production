@@ -1,32 +1,42 @@
-# Stage 1: Build stage
-FROM eclipse-temurin:19 AS builder
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# Set the working directory
+FROM eclipse-temurin:19@sha256:f3fbf1ad599d4b5dbdd7ceb55708d10cb9fafb08e094ef91e92aa63b520a232e as builder
+
 WORKDIR /app
+ 
+COPY ["build.gradle", "gradlew", "./"]
+COPY gradle gradle
+RUN chmod +x gradlew
+RUN ./gradlew downloadRepos
 
-# Install Gradle (replace version with the one needed for your project)
-RUN apt-get update && apt-get install -y wget unzip \
-    && wget https://services.gradle.org/distributions/gradle-7.6-bin.zip \
-    && unzip gradle-7.6-bin.zip -d /opt \
-    && ln -s /opt/gradle-7.6/bin/gradle /usr/bin/gradle
+COPY . .
+RUN chmod +x gradlew
+RUN ./gradlew installDist
 
-# Copy the build files
-COPY . /app
+FROM eclipse-temurin:19.0.1_10-jre-alpine@sha256:fabe27bd9db502d484a11d3f571c2f4ef7bba4a172527084d939935358fb06c4
 
-# Build the application
-RUN gradle build --no-daemon
+RUN apk add --no-cache ca-certificates
 
-# Stage 2: Runtime stage
-FROM eclipse-temurin:19
+# Download Stackdriver Profiler Java agent
+RUN mkdir -p /opt/cprof && \
+    wget -q -O- https://storage.googleapis.com/cloud-profiler/java/latest/profiler_java_agent_alpine.tar.gz \
+    | tar xzv -C /opt/cprof && \
+    rm -rf profiler_java_agent.tar.gz
 
-# Set the working directory
 WORKDIR /app
+COPY --from=builder /app .
 
-# Copy the built application from the builder stage
-COPY --from=builder /app/build/install/hipstershop /app
-
-# Expose the port the application will run on
 EXPOSE 9555
-
-# Define the entry point for the container
-ENTRYPOINT ["/app/bin/AdService"]
+ENTRYPOINT ["/app/build/install/hipstershop/bin/AdService"]
