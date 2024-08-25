@@ -132,7 +132,7 @@ jobs:
         with:
           push: true
           tags: sharuelement/adservice:latest
-          context: ./src/adservice/ || true
+          context: ./src/adservice/ 
 
   dotnet-build-cartservice:
     runs-on: ubuntu-latest
