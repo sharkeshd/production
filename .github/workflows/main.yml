@@ -99,4 +99,49 @@ jobs:
         run: pwd
       - name: List files
         run: ls -al
-      # Add additional steps here as needed for dependency submission
+  
+  dotnet-Build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.x'  # Adjust this version as needed
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Publish
+      run: dotnet publish --configuration Release --no-build --output ./publish
+
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: ./publish      # Add additional steps here as needed for dependency submission
+
+  dotnet-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.x'  # Change to the version of .NET you're using
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
+      
