@@ -11,9 +11,6 @@ on:
 jobs:
   checkout:
     runs-on: ubuntu-latest
-    outputs:
-      # Use output variables if needed for cross-job data sharing
-      # Example: directory: ${{ steps.checkout.outputs.directory }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
