@@ -40,6 +40,16 @@ jobs:
           sarif_file: devskim-results.sarif     
 
   
+  name: Java Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
   build:
     runs-on: ubuntu-latest
 
@@ -54,11 +64,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle
-        run: ./gradlew installDist
-        # If using Maven, replace with:
-        # run: mvn install
+        run: ./gradlew build
 
       - name: Run tests
         run: ./gradlew test
-        # If using Maven, replace with:
-        # run: mvn test
