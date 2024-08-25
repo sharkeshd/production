@@ -11,8 +11,11 @@ on:
 jobs:
   checkout:
     runs-on: ubuntu-latest
+    outputs:
+      working-directory: ${{ steps.checkout.outputs.working-directory }}
     steps:
       - name: Checkout code
+        id: checkout
         uses: actions/checkout@v4
 
       - name: Print working directory
@@ -40,7 +43,7 @@ jobs:
         with:
           sarif_file: devskim-results.sarif
 
-  build:
+  gradle-build:
     runs-on: ubuntu-latest
     needs: lint
     permissions:
@@ -72,9 +75,9 @@ jobs:
           ./gradlew downloadRepos || true
           ./gradlew installDist || true
 
-  test:
+  gradle-test:
     runs-on: ubuntu-latest
-    needs: build
+    needs: gradle-build
     permissions:
       contents: read
     steps:
@@ -104,7 +107,7 @@ jobs:
 
   dotnet-build:
     runs-on: ubuntu-latest
-    needs: test
+    needs: gradle-test
     permissions:
       contents: read
     steps:
