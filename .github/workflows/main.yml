@@ -99,49 +99,47 @@ jobs:
         run: /src/
       - name: List files
         run: ls -al
+    
+      build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.x'  # Change this to the version you need
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ./src/cartservices/src/  # Set the working directory
+
+      - name: Build
+        run: dotnet build --no-restore
+        working-directory: ./src/cartservices/src/  # Set the working directory
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build  # This ensures the test job runs after the build job
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.x'  # Change this to the version you need
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ./your-subdirectory  # Set the working directory
+
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+        working-directory: ./src/cartservices/src/  # Set the working directory  
   
-  dotnet-Build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '7.x'  # Adjust this version as needed
-
-    - name: Restore dependencies
-      run: dotnet restore
-
-    - name: Build
-      run: /src/cartservices/src/
-
-    - name: Publish
-      run: dotnet publish --configuration Release --no-build --output ./publish
-
-    - name: Archive build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: build-artifacts
-        path: ./publish      # Add additional steps here as needed for dependency submission
-
-  dotnet-test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '7.x'  # Change to the version of .NET you're using
-
-    - name: Restore dependencies
-      run: dotnet restore
-
-    - name: Test
-      run: /src/cartservices/src/
+    
       
