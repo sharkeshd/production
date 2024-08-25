@@ -11,10 +11,13 @@ on:
 jobs:
   checkout:
     runs-on: ubuntu-latest
+    outputs:
+      # Use output variables if needed for cross-job data sharing
+      # Example: directory: ${{ steps.checkout.outputs.directory }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Print working directory
         run: pwd
         
@@ -40,12 +43,11 @@ jobs:
         with:
           sarif_file: devskim-results.sarif     
 
- 
   setup-java:
     runs-on: ubuntu-20.04
     needs: checkout
     steps:
-      - name: setup java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -53,9 +55,10 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
       - name: Build with Gradle
         run: |
-          chmod +x gradlew
+          chmod +x gradlew || true # Avoid failure if gradlew doesn't exist
           ./gradlew downloadRepos
           ./gradlew installDist
 
@@ -66,15 +69,14 @@ jobs:
     steps:
       - uses: gradle/actions/wrapper-validation@v4
 
-
   trivy-fs-scan:
     runs-on: ubuntu-20.04
     needs: validation
     steps:
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y trivy
+
       - name: Trivy FS scan
         run: |
           trivy fs --format table -o fs.html .
-
-  
-
- 
