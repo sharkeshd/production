@@ -54,7 +54,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew installDist
         # If using Maven, replace with:
         # run: mvn install
 
