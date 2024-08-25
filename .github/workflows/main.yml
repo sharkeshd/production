@@ -56,8 +56,8 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x gradlew || true # Avoid failure if gradlew doesn't exist
-          ./gradlew downloadRepos
-          ./gradlew installDist
+          /gradlew downloadRepos
+          /gradlew installDist
 
   validation:
     name: Validate Gradle Wrapper
