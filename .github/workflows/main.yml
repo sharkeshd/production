@@ -96,7 +96,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Print working directory
-        run: pwd
+        run: /src/cartservices/src/
       - name: List files
         run: ls -al
   
