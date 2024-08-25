@@ -96,7 +96,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Print working directory
-        run: /src/cartservices/src/
+        run: /src/
       - name: List files
         run: ls -al
   
@@ -116,7 +116,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: /src/cartservices/src/
 
     - name: Publish
       run: dotnet publish --configuration Release --no-build --output ./publish
@@ -143,5 +143,5 @@ jobs:
       run: dotnet restore
 
     - name: Test
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      run: /src/cartservices/src/
       
