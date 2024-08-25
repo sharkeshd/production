@@ -39,8 +39,4 @@ WORKDIR /app
 COPY --from=builder /app .
 
 EXPOSE 9555
-<<<<<<< HEAD
 ENTRYPOINT ["/app/build/install/hipstershop/bin/AdService"]
-=======
-ENTRYPOINT ["/app/build/install/hipstershop/bin/AdService"]
->>>>>>> ec6a7a8656509e53f8d0082975255f521b52cdf6
