@@ -63,4 +63,16 @@ jobs:
       run: |
         ./gradlew downloadRepos || true
         ./gradlew installDist || true
+  dependency-submission:
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write
+  steps:
+    - uses: actions/checkout@v4
+    - name: Print working directory
+      run: pwd
+    - name: List files
+      run: ls -al
+    # Add steps here as needed for dependency submission
+      
 
