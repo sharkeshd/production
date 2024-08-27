@@ -124,11 +124,10 @@ jobs:
 
   install-trivy:
     runs-on: ubuntu-latest
-     needs: dotnet-build-cartservice
+    needs: dotnet-build-cartservice
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
       - name: Install Trivy
         run: |
           sudo apt-get update
@@ -143,14 +142,12 @@ jobs:
     needs: install-trivy
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
       - name: Trivy scan for adservice
         run: |
           trivy fs --exit-code 1 --no-progress . > new/trivy-adservice-results.txt || true
-        working-directory: ./src/cartservice/src/
-        continue-on-error: true        
-
+        working-directory: ./src/adservice/
+        continue-on-error: true
 
   docker-build-and-push-cartservice:
     runs-on: ubuntu-latest
@@ -174,4 +171,4 @@ jobs:
         with:
           push: true
           tags: sharuelement/cartservice:latest
-          context: ./src/cartservice/src/        
+          context: ./src/cartservice/src/
