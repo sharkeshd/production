@@ -122,6 +122,34 @@ jobs:
           dotnet build --no-restore
           dotnet test --no-build --verbosity normal
 
+  install-trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.35.0/trivy_0.35.0_Linux-64bit.deb
+          sudo dpkg -i trivy_0.35.0_Linux-64bit.deb
+          sudo apt-get install -f  # Fix dependencies
+          trivy --version
+
+  trivy-scan-adservice:
+    runs-on: ubuntu-latest
+    needs: install-trivy
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Trivy scan for adservice
+        run: |
+          trivy fs --exit-code 1 --no-progress . > new/trivy-adservice-results.txt || true
+        working-directory: ./src/cartservice/src/
+        continue-on-error: true        
+
 
   docker-build-and-push-cartservice:
     runs-on: ubuntu-latest
