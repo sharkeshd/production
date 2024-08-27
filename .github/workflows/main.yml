@@ -231,44 +231,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20.8.0'
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./src/currencyservice/
-      - name: Build
-        run: npm run build
-        working-directory: ./src/currencyservice/
-      - name: Run tests
-        run: npm test
-        working-directory: ./src/currencyservice/
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: ./src/checkoutservice/build  # Adjust path if needed
+        uses: actions/checkout@v4
 
-  node-js-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.8.0'
+          node-version: '18'
+
       - name: Install dependencies
-        run: npm install
-        working-directory: ./src/currencyservice/
+        run: npm ci
+
       - name: Run tests
-        run: npm test
-        working-directory: ./src/currencyservice/
-      - name: Upload test results (optional)
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: ./src/currencyservice/test-results  # Adjust path if needed
+        run: |
+          cd src/currencyservice
+          npm test        
+
