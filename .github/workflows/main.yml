@@ -238,13 +238,13 @@ jobs:
           node-version: '20.8.0'
       - name: Install dependencies
         run: npm install
-        working-directory: ./src/checkoutservice/
+        working-directory: ./src/currencyservice/
       - name: Build
         run: npm run build
-        working-directory: ./src/checkoutservice/
+        working-directory: ./src/currencyservice/
       - name: Run tests
         run: npm test
-        working-directory: ./src/checkoutservice/
+        working-directory: ./src/currencyservice/
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -262,13 +262,13 @@ jobs:
           node-version: 'node:20.8.0'
       - name: Install dependencies
         run: npm install
-        working-directory: ./src/checkoutservice/
+        working-directory: ./src/currencyservice/
       - name: Run tests
         run: npm test
-        working-directory: ./src/checkoutservice/
+        working-directory: ./src/currencyservice/
       - name: Upload test results (optional)
         if: failure()
         uses: actions/upload-artifact@v3
         with:
           name: test-results
-          path: ./src/checkoutservice/test-results  # Adjust path if needed
+          path: ./src/currencyservice/test-results  # Adjust path if needed
