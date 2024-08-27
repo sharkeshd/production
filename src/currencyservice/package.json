@@ -5,7 +5,7 @@
   "repository": "https://github.com/GoogleCloudPlatform/microservices-demo",
   "scripts": {
     "start": "node dist/server.js",
-    "build": "tsc --build",
+    "build": "npm build",
     "test": "npm test" 
   },
   "license": "Apache-2.0",
