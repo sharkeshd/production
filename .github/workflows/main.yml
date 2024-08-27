@@ -194,7 +194,8 @@ jobs:
       matrix:
         go-version: [ '1.19', '1.20', '1.21.3' ]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v5
         with:
@@ -203,7 +204,6 @@ jobs:
         run: go version
 
   docker-build-and-push-checkoutservice:
-    name: Golang Docker Build and Push
     runs-on: ubuntu-latest
     needs: go-build
     steps:
@@ -226,3 +226,49 @@ jobs:
           push: true
           tags: sharuelement/checkoutservice:latest
           context: ./src/checkoutservice/
+
+  node-js-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.8.0'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./src/checkoutservice/
+      - name: Build
+        run: npm run build
+        working-directory: ./src/checkoutservice/
+      - name: Run tests
+        run: npm test
+        working-directory: ./src/checkoutservice/
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: ./src/checkoutservice/build  # Adjust path if needed
+
+  node-js-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./src/checkoutservice/
+      - name: Run tests
+        run: npm test
+        working-directory: ./src/checkoutservice/
+      - name: Upload test results (optional)
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: ./src/checkoutservice/test-results  # Adjust path if needed
