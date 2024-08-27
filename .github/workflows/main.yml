@@ -302,11 +302,11 @@ jobs:
           dotnet restore
           dotnet build --no-restore
           dotnet test --no-build --verbosity normal
-=======
+          
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           push: true
           tags: sharuelement/checkoutservice:latest
           context: ./src/checkoutservice/
->>>>>>> c0e7878eb651568ed7eeead3dcb846a073294129
+
