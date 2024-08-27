@@ -243,7 +243,7 @@ jobs:
       - name: Build
         run: |
           cd src/currencyservice
-          npm build
+          tsc --build
 
   node-js-test:
     runs-on: ubuntu-latest
