@@ -24,6 +24,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-20.04
+    needs: checkout
     permissions:
       actions: read
       contents: read
@@ -40,7 +41,7 @@ jobs:
 
   gradle-build:
     runs-on: ubuntu-latest
-    needs: checkout
+    needs: lint
     permissions:
       contents: read
     steps:
@@ -106,7 +107,7 @@ jobs:
 
   dotnet-build-cartservice:
     runs-on: ubuntu-latest
-    needs: checkout
+    needs: lint
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
