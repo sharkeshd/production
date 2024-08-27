@@ -227,7 +227,7 @@ jobs:
           tags: sharuelement/checkoutservice:latest
           context: ./src/checkoutservice/
 
-  build-and-test:
+  node-build-and-test:
     runs-on: ubuntu-latest
     
     steps:
@@ -241,12 +241,12 @@ jobs:
 
     - name: Install dependencies
       run: npm install
-      context: ./src/currencyservice/
+      working-directory: ./src/currencyservice/
 
     - name: Build
       run: npm run build
-      context: ./src/currencyservice/
+      working-directory: ./src/currencyservice/
 
     - name: Test
       run: npm test
-      context: ./src/currencyservice/
+      working-directory: ./src/currencyservice/
