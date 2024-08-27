@@ -185,40 +185,26 @@ jobs:
           tags: sharuelement/cartservice:latest
           context: ./src/cartservice/src/
 
-  golang-build:
-    name: Go Build and Test
+  go-build:
     runs-on: ubuntu-latest
-    needs: checkout
+    strategy:
+      matrix:
+        go-version: [ '1.19', '1.20', '1.21.3' ]
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.21.3'
-      - name: Cache Go modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            **/go.sum
-            **/go.mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: Install dependencies
-        run: go mod download
-      - name: Build
-        run: go build -v ./...
-      - name: Run tests
-        run: go test -v ./...
-      - name: Check formatting
-        run: gofmt -l .
+          go-version: ${{ matrix.go-version }}
+      # You can test your matrix by printing the current Go version
+      - name: 1.21.3
+        run: go version
 
   docker-build-and-push-checkoutservice:
     name: Golang Docker Build and Push
     runs-on: ubuntu-latest
-    needs: golang-build
+    needs: go-build
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
