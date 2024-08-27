@@ -239,7 +239,9 @@ jobs:
           node-version: '20.8.0'
 
       - name: Install dependencies
-        run: npm i
+        run: |
+          cd src/currencyservice
+          npm install    
 
       - name: Run tests
         run: |
