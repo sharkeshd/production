@@ -188,30 +188,42 @@ jobs:
           context: ./src/cartservice/src/
 
   golang-build:
-    name: Go-lang Build and Test
-    runs-on: ubuntu-latest
-    needs: checkout
+  name: Go-lang Build and Test
+  runs-on: ubuntu-latest
+  needs: checkout
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+  steps:
+  - name: Checkout code
+    uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: '1.20' # Set the Go version you need
+  - name: Set up Go
+    uses: actions/setup-go@v3
+    with:
+      go-version: '1.20' # Set the Go version you need
 
-    - name: Install dependencies
-      run: go mod download
+  - name: Cache Go modules
+    uses: actions/cache@v3
+    with:
+      path: | 
+        **/go.sum
+        **/go.mod
+        ~/.cache/go-build
+      key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+      restore-keys: |
+        ${{ runner.os }}-go-
 
-    - name: Build
-      run: go build -v ./...
+  - name: Install dependencies
+    run: go mod download
 
-    - name: Run tests
-      run: go test -v ./...
+  - name: Build
+    run: go build -v ./...
 
-    - name: Check formatting
-      run: gofmt -l .   
+  - name: Run tests
+    run: go test -v ./...
+
+  - name: Check formatting
+    run: gofmt -l .
+
 
   docker-build-and-push-checkoutservice:
     name: Golang-Docker build and push
