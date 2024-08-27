@@ -80,7 +80,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Run Gradle Tests
         run: ./gradlew test || true
-
   docker-build-and-push-adservice:
     runs-on: ubuntu-latest
     needs: checkout
