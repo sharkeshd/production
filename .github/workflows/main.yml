@@ -107,7 +107,6 @@ jobs:
 
   dotnet-build-cartservice:
     runs-on: ubuntu-latest
-    needs: checkout
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -144,5 +143,5 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: sharuelement/adservice:latest
+          tags: sharuelement/cartservice:latest
           context: ./src/cartservice/src/        
