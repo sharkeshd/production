@@ -228,13 +228,25 @@ jobs:
           context: ./src/checkoutservice/
 
   nodejs-build:
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
+  runs-on: ubuntu-latest
+  needs: lint
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Install dependencies
+      run: |
+        cd ./src/cartservice/src/
+        npm install
+
+    - name: Run tests
+      run: |
+        cd ./src/cartservice/src/
+        npm test
+
       
