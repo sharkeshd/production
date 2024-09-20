@@ -239,9 +239,9 @@ jobs:
           node-version: '20.x'
       - name: Install dependencies
         run: |
-          cd ./src/cartservice/src/
+          cd ./src/currencyservice/
           npm install
       - name: Run tests
         run: |
-          cd ./src/cartservice/src/
+          cd ./src/currencyservice/
           npm test
