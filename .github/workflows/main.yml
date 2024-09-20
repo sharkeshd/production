@@ -227,7 +227,7 @@ jobs:
           tags: sharuelement/checkoutservice:latest
           context: ./src/checkoutservice/
 
-    nodejs-build:
+  nodejs-build:
     runs-on: ubuntu-latest
     needs: lint
     steps:
