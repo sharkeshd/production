@@ -67,7 +67,6 @@ jobs:
 
   
 
-
   docker-build-and-push-cartservice:
     runs-on: ubuntu-latest
     needs: lint
