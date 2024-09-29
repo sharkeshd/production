@@ -335,7 +335,7 @@ jobs:
           trivy image --format json --output trivy-report.json your-docker-image:tag
 
       - name: Upload Trivy report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: trivy-report
           path: trivy-report.json
