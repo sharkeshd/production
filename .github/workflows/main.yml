@@ -334,7 +334,7 @@ jobs:
           trivy image --format json --output trivy-report.json $IMAGE_NAME
 
       - name: Upload Trivy Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: trivy-report
-          path: trivy-report.json        
+          path: trivy-report.json
