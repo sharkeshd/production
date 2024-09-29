@@ -311,41 +311,21 @@ jobs:
           context: ./src/shippingservice/
 
 
-  trivy-scan:
-    runs-on: ubuntu-latest
+  trivy:
+    name: Build
+    runs-on: ubuntu-20.04
     needs: docker-build-and-push-shippingservice
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget jq
+    - name: Generate tarball from image
+      run: |
+        docker pull sharuelement/shippingservice:latest
+        docker save -o vuln-image.tar sharuelement/shippingservice:latest
 
-      - name: Install Trivy
-        run: |
-          TRIVY_VERSION=$(curl -sL https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r .tag_name)
-          echo "Installing Trivy version: $TRIVY_VERSION"
-          wget "https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}/trivy_${TRIVY_VERSION:1}_Linux_x86_64.deb" || {
-            echo "Failed to download Trivy, falling back to latest release."
-            LATEST_VERSION=$(curl -sL https://api.github.com/repos/aquasecurity/trivy/releases | jq -r '.[0].tag_name')
-            wget "https://github.com/aquasecurity/trivy/releases/download/${LATEST_VERSION}/trivy_${LATEST_VERSION:1}_Linux_x86_64.deb"
-          }
-          sudo dpkg -i trivy_${TRIVY_VERSION:1}_Linux_x86_64.deb || {
-            echo "Installation of Trivy failed."
-            exit 1
-          }
-
-      - name: Scan Docker Image
-        env:
-          IMAGE_NAME: sharuelement/shippingservice:latest
-        run: |
-          trivy image --format json --output trivy-report.json $IMAGE_NAME
-
-      - name: Upload Trivy Report
-        uses: actions/upload-artifact@v3
-        with:
-          name: trivy-report
-          path: trivy-report.json
+    - name: Run Trivy vulnerability scanner in tarball mode
+      uses: aquasecurity/trivy-action@0.20.0
+      with:
+        input: /github/workspace/vuln-image.tar
+        severity: 'CRITICAL,HIGH'
