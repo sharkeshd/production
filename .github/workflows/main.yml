@@ -309,3 +309,31 @@ jobs:
           push: true
           tags: sharuelement/shippingservice:latest
           context: ./src/shippingservice/
+
+
+  trivy-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          VERSION=$(curl -sL https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep tag_name | cut -d '"' -f 4)
+          wget https://github.com/aquasecurity/trivy/releases/download/${VERSION}/trivy_$(uname -s)_$(uname -m).deb
+          sudo dpkg -i trivy_*.deb
+
+      - name: Scan Docker Image
+        env:
+          IMAGE_NAME: sharuelement/shippingservice:latest
+        run: |
+          trivy image --format json --output trivy-report.json $IMAGE_NAME
+
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: trivy-report
+          path: trivy-report.json        
