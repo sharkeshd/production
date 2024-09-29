@@ -319,13 +319,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Trivy
+      - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget
-          VERSION=$(curl -sL https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep tag_name | cut -d '"' -f 4)
-          wget https://github.com/aquasecurity/trivy/releases/download/${VERSION}/trivy_$(uname -s)_$(uname -m).deb
-          sudo dpkg -i trivy_*.deb
+          sudo apt-get install -y wget jq
+
+      - name: Install Trivy
+        run: |
+          TRIVY_VERSION=$(curl -sL https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r .tag_name)
+          wget https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}/trivy_${TRIVY_VERSION:1}_Linux_x86_64.deb
+          sudo dpkg -i trivy_${TRIVY_VERSION:1}_Linux_x86_64.deb
 
       - name: Scan Docker Image
         env:
