@@ -197,7 +197,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: List files in context directory
-        run: ls -la ./src/loadgenerator/
+        run: ls -la ./src/loadgenerator/Dockerfile
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
