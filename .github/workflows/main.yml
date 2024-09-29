@@ -312,7 +312,7 @@ jobs:
 
 
   trivy:
-    name: Build
+    name: trivy
     runs-on: ubuntu-20.04
     needs: docker-build-and-push-shippingservice
     steps:
