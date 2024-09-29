@@ -327,8 +327,16 @@ jobs:
       - name: Install Trivy
         run: |
           TRIVY_VERSION=$(curl -sL https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r .tag_name)
-          wget https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}/trivy_${TRIVY_VERSION:1}_Linux_x86_64.deb
-          sudo dpkg -i trivy_${TRIVY_VERSION:1}_Linux_x86_64.deb
+          echo "Installing Trivy version: $TRIVY_VERSION"
+          wget "https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}/trivy_${TRIVY_VERSION:1}_Linux_x86_64.deb" || {
+            echo "Failed to download Trivy, falling back to latest release."
+            LATEST_VERSION=$(curl -sL https://api.github.com/repos/aquasecurity/trivy/releases | jq -r '.[0].tag_name')
+            wget "https://github.com/aquasecurity/trivy/releases/download/${LATEST_VERSION}/trivy_${LATEST_VERSION:1}_Linux_x86_64.deb"
+          }
+          sudo dpkg -i trivy_${TRIVY_VERSION:1}_Linux_x86_64.deb || {
+            echo "Installation of Trivy failed."
+            exit 1
+          }
 
       - name: Scan Docker Image
         env:
