@@ -39,8 +39,7 @@ jobs:
         with:
           sarif_file: devskim-results.sarif
 
-
-
+#Docker
   docker-build-and-push-adservice:
     runs-on: ubuntu-latest
     needs: lint
