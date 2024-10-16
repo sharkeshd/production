@@ -53,7 +53,7 @@ jobs:
       working-directory: ./src/adservice/
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew installDist
       working-directory: ./src/adservice/
 
 
