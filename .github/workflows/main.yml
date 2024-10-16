@@ -56,15 +56,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Make gradlew executable
-        working-directory: src/adservice
+        working-directory: src/adservice/
         run: chmod +x ./gradlew
 
       - name: List available Gradle tasks
-        working-directory: src/adservice
+        working-directory: src/adservice/
         run: ./gradlew tasks
 
       - name: Build with Gradle
-        working-directory: src/adservice
+        working-directory: src/adservice/
         run: ./gradlew build
 
      
