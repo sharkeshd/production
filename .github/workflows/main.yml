@@ -40,21 +40,25 @@ jobs:
           sarif_file: devskim-results.sarif
 
   gradlew:
-    runs-on: ubuntu-latest
-    needs: checkout
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
+  runs-on: ubuntu-latest
+  needs: checkout
+  steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
       
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: 17
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 17
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
 
-      - name: Build with Gradle
-        working-directory: src/adservice
-        run: ./gradlew build validate
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Build with Gradle
+      working-directory: src/adservice
+      run: ./gradlew build validate
+
