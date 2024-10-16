@@ -67,6 +67,4 @@ jobs:
         working-directory: src/adservice
         run: ./gradlew build
 
-      - name: Install Distribution
-        working-directory: src/adservice
-        run: ./gradlew installDist
+     
