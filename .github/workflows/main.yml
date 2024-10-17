@@ -46,6 +46,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
+          working-directory: /src/adservice/
           distribution: 'temurin'
           java-version: 20
 
