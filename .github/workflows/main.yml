@@ -62,7 +62,7 @@ jobs:
   validation:
     name: Validate Gradle Wrapper
     needs: setup-java
-    runs-on: self-hosted
+    runs-on: ubuntu-20.04
     steps:
       - uses: gradle/actions/wrapper-validation@v4
       with:
