@@ -68,7 +68,7 @@ jobs:
   validation:
     name: Validate Gradle Wrapper
     needs: setup-java
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
