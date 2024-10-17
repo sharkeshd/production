@@ -51,6 +51,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          working-directory: /src/aservice/
       - name: Build with Gradle
         run: |
           chmod +x gradlew
@@ -63,5 +65,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: gradle/actions/wrapper-validation@v4
+      with:
+          working-directory: /src/aservice/
 
      
