@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: checkout
     steps:
-      - name: setup java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -53,6 +53,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           working-directory: /src/aservice/
+          
       - name: Build with Gradle
         run: |
           chmod +x gradlew
@@ -62,10 +63,9 @@ jobs:
   validation:
     name: Validate Gradle Wrapper
     needs: setup-java
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     steps:
-      - uses: gradle/actions/wrapper-validation@v4
-      with:
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+        with:
           working-directory: /src/aservice/
-
-     
