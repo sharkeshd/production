@@ -39,32 +39,29 @@ jobs:
         with:
           sarif_file: devskim-results.sarif
 
-  gradlew:
-    runs-on: ubuntu-latest
+  setup-java:
+    runs-on: ubuntu-20.04
     needs: checkout
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-      
-      - name: Setup Java
+      - name: setup java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 17
+          java-version: 20
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Make gradlew executable
-        working-directory: src/adservice/
-        run: chmod +x ./gradlew
-
-      - name: List available Gradle tasks
-        working-directory: src/adservice/
-        run: ./gradlew tasks
-
       - name: Build with Gradle
-        working-directory: src/adservice/
-        run: ./gradlew build
+        run: |
+          chmod +x gradlew
+          ./gradlew downloadRepos
+          ./gradlew installDist
+
+  validation:
+    name: Validate Gradle Wrapper
+    needs: setup-java
+    runs-on: self-hosted
+    steps:
+      - uses: gradle/actions/wrapper-validation@v4
 
      
