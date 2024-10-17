@@ -43,17 +43,20 @@ jobs:
     runs-on: ubuntu-20.04
     needs: checkout
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          working-directory: /src/adservice/
           distribution: 'temurin'
           java-version: 20
+          working-directory: src/adservice/ # Correct working directory
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          working-directory: src/adservice/
+          working-directory: src/adservice/ # Ensure Gradle works in the correct directory
 
       - name: Build with Gradle
         working-directory: src/adservice/
@@ -67,6 +70,9 @@ jobs:
     needs: setup-java
     runs-on: self-hosted
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
         with:
