@@ -52,10 +52,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          working-directory: /src/aservice/
+          working-directory: /src/adservice/
 
       - name: Build with Gradle
-        working-directory: /src/aservice/
+        working-directory: /src/adservice/
         run: |
           chmod +x ./gradlew
           ./gradlew downloadRepos
@@ -69,4 +69,4 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
         with:
-          working-directory: /src/aservice/
+          working-directory: /src/adservice/
