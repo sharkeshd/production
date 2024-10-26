@@ -1,67 +1,41 @@
-name: CI Pipeline
+name: java CI
+
+env:
+  APP_NAME: adservice
 
 on:
   push:
     branches:
-      - main
+      - 'main'
   pull_request:
     branches:
-      - main
+      - 'main'
 
 jobs:
   checkout:
+    name: Checkout
     runs-on: ubuntu-latest
-    outputs:
-      working-directory: ${{ steps.checkout.outputs.working-directory }}
     steps:
-      - name: Checkout code
-        id: checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      - name: Print working directory
-        run: pwd
-      - name: List files
-        run: ls -al
-
-  lint:
-    runs-on: ubuntu-20.04
-    needs: checkout
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Run DevSkim scanner
-        uses: microsoft/DevSkim-Action@v1
-      - name: Upload DevSkim scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: devskim-results.sarif
 
   setup-java:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: checkout
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 20
-          working-directory: src/adservice/
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          working-directory: src/adservice/
 
       - name: Build with Gradle
-        working-directory: src/adservice/
+        working-directory: src/adservice
         run: |
-          chmod +x ./gradlew
+          chmod +x gradlew
           ./gradlew downloadRepos
           ./gradlew installDist
 
@@ -70,87 +44,48 @@ jobs:
     needs: setup-java
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
+      - uses: gradle/actions/wrapper-validation@v4
         with:
-          working-directory: src/adservice/
+          working-directory: src/adservice
 
   trivy-fs-scan:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: validation
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: src/adservice/
-
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-
-      - name: Trivy FS scan
-        working-directory: src/adservice/
+      - name: Trivy FS Scan
+        working-directory: src/adservice
         run: |
           trivy fs --format table -o fs.html .
 
-      - name: Upload Trivy FS scan results
-        uses: actions/upload-artifact@v3
-        with:
-          name: trivy-fs-scan-results
-          path: src/adservice/fs.html
+  
 
   docker-image-build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: trivy-fs-scan
-    steps:    
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: src/adservice/
-
+    steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker Image
-        working-directory: src/adservice/
+      
+      - name: Build and Push Docker Image
+        working-directory: src/adservice
         run: |
-          docker build --no-cache -t sharuelement/adservice .
+          docker build -t sharuelement/$APP_NAME:${{ github.sha }} .
 
   trivy-image-scan:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: docker-image-build
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: src/adservice/
-
       - name: Trivy Image Scan
-        working-directory: src/adservice/
         run: |
-          trivy image --format table -o trivy-image-report.html sharuelement/adservice
-
-      - name: Upload Trivy Image Scan results
-        uses: actions/upload-artifact@v3
-        with:
-          name: trivy-image-scan-results
-          path: src/adservice/trivy-image-report.html
+          trivy image --format table -o trivy-image-report.html sharuelement/$APP_NAME:${{ github.sha }}
 
   docker-login-push-image:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: trivy-image-scan
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: src/adservice/
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -158,6 +93,5 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Push Docker Image
-        working-directory: src/adservice/
         run: |
-          docker push sharuelement/adservice
+          docker push sharuelement/$APP_NAME:${{ github.sha }}
