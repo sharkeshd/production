@@ -72,7 +72,7 @@ jobs:
 
   docker-image-build:
     runs-on: ubuntu-20.04
-    needs: trivy-fs-scan
+    needs: validation
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
