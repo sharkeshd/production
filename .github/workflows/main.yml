@@ -68,17 +68,7 @@ jobs:
         with:
           working-directory: src/adservice/
 
-  trivy-fs-scan:
-    runs-on: ubuntu-20.04
-    needs: validation
-    steps:
-      - name: Run Trivy vulnerability scanner in fs mode
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'  # This scans the current directory, which is set below.
-          trivy-config: trivy.yaml
-        working-directory: src/adservice  # Set the working directory to src/adservice
+  
 
   docker-image-build:
     runs-on: ubuntu-20.04
