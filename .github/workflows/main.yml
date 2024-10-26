@@ -120,7 +120,7 @@ jobs:
       - name: Build Docker Image
         working-directory: src/adservice/
         run: |
-          docker build --no-cache -t sharuelement/adservice -f src/adservice/Dockerfile .
+          docker build --no-cache -t sharuelement/adservice .
 
   trivy-image-scan:
     runs-on: ubuntu-20.04
