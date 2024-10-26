@@ -1,41 +1,67 @@
-name: java CI
-
-env:
-  APP_NAME: adservice
+name: CI Pipeline
 
 on:
   push:
     branches:
-      - 'main'
+      - main
   pull_request:
     branches:
-      - 'main'
+      - main
 
 jobs:
   checkout:
-    name: Checkout
     runs-on: ubuntu-latest
+    outputs:
+      working-directory: ${{ steps.checkout.outputs.working-directory }}
     steps:
-      - name: Checkout
+      - name: Checkout code
+        id: checkout
         uses: actions/checkout@v4
+      - name: Print working directory
+        run: pwd
+      - name: List files
+        run: ls -al
+
+  lint:
+    runs-on: ubuntu-20.04
+    needs: checkout
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run DevSkim scanner
+        uses: microsoft/DevSkim-Action@v1
+      - name: Upload DevSkim scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: devskim-results.sarif
 
   setup-java:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: checkout
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 20
+          working-directory: src/adservice/ # Correct working directory
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          working-directory: src/adservice/ # Ensure Gradle works in the correct directory
 
       - name: Build with Gradle
-        working-directory: /src/adservice
+        working-directory: src/adservice/
         run: |
-          chmod +x gradlew
+          chmod +x ./gradlew
           ./gradlew downloadRepos
           ./gradlew installDist
 
@@ -44,54 +70,10 @@ jobs:
     needs: setup-java
     runs-on: ubuntu-latest
     steps:
-      - uses: gradle/actions/wrapper-validation@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
         with:
-          working-directory: src/adservice
-
-  trivy-fs-scan:
-    runs-on: ubuntu-latest
-    needs: validation
-    steps:
-      - name: Trivy FS Scan
-        working-directory: src/adservice
-        run: |
-          trivy fs --format table -o fs.html .
-
-  
-
-  docker-image-build:
-    runs-on: ubuntu-latest
-    needs: trivy-fs-scan
-    steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Build and Push Docker Image
-        working-directory: src/adservice
-        run: |
-          docker build -t sharuelement/$APP_NAME:${{ github.sha }} .
-
-  trivy-image-scan:
-    runs-on: ubuntu-latest
-    needs: docker-image-build
-    steps:
-      - name: Trivy Image Scan
-        run: |
-          trivy image --format table -o trivy-image-report.html sharuelement/$APP_NAME:${{ github.sha }}
-
-  docker-login-push-image:
-    runs-on: ubuntu-latest
-    needs: trivy-image-scan
-    steps:
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Push Docker Image
-        run: |
-          docker push sharuelement/$APP_NAME:${{ github.sha }}
+          working-directory: src/adservice/
