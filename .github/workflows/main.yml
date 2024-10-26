@@ -79,18 +79,28 @@ jobs:
           working-directory: src/adservice/
 
   trivy-fs-scan:
-    runs-on: ubuntu-20.04
-    needs: validation
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: src/adservice/
+  runs-on: self-hosted
+  needs: validation
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        path: src/adservice/
 
-      - name: Trivy FS scan
-        working-directory: src/adservice/
-        run: |
-          trivy fs --format table -o fs.html .
+    - name: Install Trivy
+      run: |
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+    - name: Trivy FS scan
+      working-directory: src/adservice/
+      run: |
+        trivy fs --format table -o fs.html .
+
+    - name: Upload Trivy FS scan results
+      uses: actions/upload-artifact@v3
+      with:
+        name: trivy-fs-scan-results
+        path: src/adservice/fs.html
 
       - name: Upload Trivy FS scan results
         uses: actions/upload-artifact@v3
