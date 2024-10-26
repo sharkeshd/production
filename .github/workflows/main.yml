@@ -120,7 +120,7 @@ jobs:
       - name: Build Docker Image
         working-directory: src/adservice/
         run: |
-          docker build -t sharuelement/$APP_NAME:${{ github.sha }} .
+          docker build -t sharuelement/adservice .
 
   trivy-image-scan:
     runs-on: ubuntu-20.04
@@ -134,7 +134,7 @@ jobs:
       - name: Trivy Image Scan
         working-directory: src/adservice/
         run: |
-          trivy image --format table -o trivy-image-report.html sharuelement/$APP_NAME:${{ github.sha }}
+          trivy image --format table -o trivy-image-report.html sharuelement/adservice
 
       - name: Upload Trivy Image Scan results
         uses: actions/upload-artifact@v3
@@ -160,4 +160,4 @@ jobs:
       - name: Push Docker Image
         working-directory: src/adservice/
         run: |
-          docker push sharuelement/$APP_NAME:${{ github.sha }}
+          docker push sharuelement/adservice
