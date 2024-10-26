@@ -77,3 +77,83 @@ jobs:
         uses: gradle/wrapper-validation-action@v1
         with:
           working-directory: src/adservice/
+
+  trivy-fs-scan:
+    runs-on: self-hosted
+    needs: validation
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: src/adservice/
+
+      - name: Trivy FS scan
+        working-directory: src/adservice/
+        run: |
+          trivy fs --format table -o fs.html .
+
+      - name: Upload Trivy FS scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-fs-scan-results
+          path: src/adservice/fs.html
+
+  docker-image-build:
+    runs-on: self-hosted
+    needs: trivy-fs-scan
+    steps:    
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: src/adservice/
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        working-directory: src/adservice/
+        run: |
+          docker build -t srikanthhg/$APP_NAME:${{ github.sha }} .
+
+  trivy-image-scan:
+    runs-on: self-hosted
+    needs: docker-image-build
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: src/adservice/
+
+      - name: Trivy Image Scan
+        working-directory: src/adservice/
+        run: |
+          trivy image --format table -o trivy-image-report.html srikanthhg/$APP_NAME:${{ github.sha }}
+
+      - name: Upload Trivy Image Scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-image-scan-results
+          path: src/adservice/trivy-image-report.html
+
+  docker-login-push-image:
+    runs-on: self-hosted
+    needs: trivy-image-scan
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: src/adservice/
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker Image
+        working-directory: src/adservice/
+        run: |
+          docker push srikanthhg/$APP_NAME:${{ github.sha }}
