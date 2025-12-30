@@ -1,4 +1,4 @@
-name: CI Pipeline (Split Build / Scan / Push)
+name: CI Pipeline (Build → Scan → Push)
 
 on:
   push:
@@ -12,34 +12,35 @@ env:
 
 jobs:
 # -------------------------------------------------
-# 1️⃣ LINT / SECURITY (SOURCE CODE)
+# 1️⃣ CHECKOUT + JAVA + GRADLE VALIDATION
 # -------------------------------------------------
-  lint:
+  prepare:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Run DevSkim
-        uses: microsoft/DevSkim-Action@v1
-
-      - name: Upload DevSkim Results
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          sarif_file: devskim-results.sarif
+          distribution: temurin
+          java-version: 20
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v2
+        with:
+          working-directory: src/adservice
 
 # -------------------------------------------------
 # 2️⃣ BUILD (GRADLE + DOCKER)
 # -------------------------------------------------
   build:
     runs-on: ubuntu-latest
-    needs: lint
+    needs: prepare
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # Java & Gradle
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -55,18 +56,15 @@ jobs:
           chmod +x ./gradlew
           ./gradlew installDist
 
-      # Docker Build
       - name: Build Docker Image
         run: |
           cd src/adservice
           docker build -t $IMAGE_NAME:$IMAGE_TAG .
 
-      # Save Docker Image
       - name: Save Docker Image
         run: |
           docker save $IMAGE_NAME:$IMAGE_TAG -o image.tar
 
-      # Upload Image Artifact
       - name: Upload Docker Image Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -74,26 +72,24 @@ jobs:
           path: image.tar
 
 # -------------------------------------------------
-# 3️⃣ IMAGE SCAN (TRIVY)
+# 3️⃣ IMAGE SECURITY SCAN (TRIVY)
 # -------------------------------------------------
   scan:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # Download Image Artifact
       - name: Download Docker Image Artifact
         uses: actions/download-artifact@v4
         with:
           name: docker-image
 
-      # Load Docker Image
       - name: Load Docker Image
         run: |
           docker load -i image.tar
 
-      # Trivy Scan
       - name: Trivy Image Scan
         uses: aquasecurity/trivy-action@0.28.0
         with:
@@ -104,33 +100,30 @@ jobs:
           exit-code: 0
 
 # -------------------------------------------------
-# 4️⃣ PUSH TO DOCKER HUB
+# 4️⃣ PUSH IMAGE TO DOCKER HUB
 # -------------------------------------------------
   push:
     runs-on: ubuntu-latest
     needs: scan
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # Download Image Artifact
       - name: Download Docker Image Artifact
         uses: actions/download-artifact@v4
         with:
           name: docker-image
 
-      # Load Docker Image
       - name: Load Docker Image
         run: |
           docker load -i image.tar
 
-      # Docker Login
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Push Image
       - name: Push Docker Image
         run: |
           docker push $IMAGE_NAME:$IMAGE_TAG
