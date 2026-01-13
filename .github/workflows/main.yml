@@ -151,7 +151,7 @@ jobs:
         run: docker push $IMAGE_NAME:$IMAGE_TAG
 
 
-  setup-java:
+  setup-java cartservice:
     runs-on: ubuntu-latest
     needs: checkout
     steps:
@@ -175,7 +175,7 @@ jobs:
   # -------------------------------------------------
   # 4️⃣ VALIDATE GRADLE WRAPPER
   # -------------------------------------------------
-  validate-gradle:
+  validate-gradle cartservice:
     name: Validate Gradle Wrapper - cartservice
     runs-on: ubuntu-latest
     needs: setup-java
@@ -190,7 +190,7 @@ jobs:
   # -------------------------------------------------
   # 5️⃣ DOCKER IMAGE BUILD
   # -------------------------------------------------
-  docker-image-build:
+  docker-image-build cartservice:
     runs-on: ubuntu-latest
     needs: validate-gradle
     steps:
@@ -213,7 +213,7 @@ jobs:
   # -------------------------------------------------
   # 6️⃣ TRIVY IMAGE SCAN
   # -------------------------------------------------
-  trivy-image-scan:
+  trivy-image-scan cartservice:
     runs-on: ubuntu-latest
     needs: docker-image-build
     steps:
@@ -237,7 +237,7 @@ jobs:
   # -------------------------------------------------
   # 7️⃣ DOCKER LOGIN + PUSH
   # -------------------------------------------------
-  docker-login-push-image:
+  docker-login-push-image cartservice:
     runs-on: ubuntu-latest
     needs: trivy-image-scan
     steps:
