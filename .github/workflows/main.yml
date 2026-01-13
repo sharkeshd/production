@@ -167,7 +167,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build with Gradle
-        working-directory: src/adservice
+        working-directory: src/cartservice/src
         run: |
           chmod +x ./gradlew
           ./gradlew installDist
