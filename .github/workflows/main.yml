@@ -1,1 +1,151 @@
-name: CI Pipeline (Split Jobs) on: push: branches: [ main ] pull_request: branches: [ main ] env: IMAGE_NAME: sharuelement/adservice IMAGE_TAG: ${{ github.sha }} # ------------------------------------------------- # 1️⃣ CHECKOUT # ------------------------------------------------- jobs: checkout: runs-on: ubuntu-latest steps: - name: Checkout repository uses: actions/checkout@v4 # ------------------------------------------------- # 2️⃣ LINT (parallel with setup-java) # ------------------------------------------------- lint: runs-on: ubuntu-latest needs: checkout permissions: contents: read security-events: write steps: - uses: actions/checkout@v4 - name: Run DevSkim uses: microsoft/DevSkim-Action@v1 - name: Upload DevSkim Results uses: github/codeql-action/upload-sarif@v3 with: sarif_file: devskim-results.sarif # ------------------------------------------------- # 3️⃣ SETUP JAVA + GRADLE BUILD # ------------------------------------------------- setup-java: runs-on: ubuntu-latest needs: checkout steps: - uses: actions/checkout@v4 - name: Setup Java uses: actions/setup-java@v4 with: distribution: temurin java-version: 20 - name: Setup Gradle uses: gradle/actions/setup-gradle@v4 - name: Build with Gradle working-directory: src/adservice run: | chmod +x ./gradlew ./gradlew installDist # ------------------------------------------------- # 4️⃣ VALIDATE GRADLE WRAPPER # ------------------------------------------------- validate-gradle: name: Validate Gradle Wrapper runs-on: ubuntu-latest needs: setup-java steps: - uses: actions/checkout@v4 - name: Validate Wrapper uses: gradle/wrapper-validation-action@v2 with: working-directory: src/adservice # ------------------------------------------------- # 5️⃣ DOCKER IMAGE BUILD # ------------------------------------------------- docker-image-build: runs-on: ubuntu-latest needs: validate-gradle steps: - uses: actions/checkout@v4 - name: Build Docker Image run: | cd src/adservice docker build -t $IMAGE_NAME:$IMAGE_TAG . - name: Save Docker Image run: | docker save $IMAGE_NAME:$IMAGE_TAG -o image.tar - name: Upload Docker Image Artifact uses: actions/upload-artifact@v4 with: name: docker-image path: image.tar # ------------------------------------------------- # 6️⃣ TRIVY IMAGE SCAN # ------------------------------------------------- trivy-image-scan: runs-on: ubuntu-latest needs: docker-image-build steps: - uses: actions/checkout@v4 - name: Download Image Artifact uses: actions/download-artifact@v4 with: name: docker-image - name: Load Docker Image run: docker load -i image.tar - name: Trivy Scan uses: aquasecurity/trivy-action@0.28.0 with: image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} scanners: vuln severity: CRITICAL,HIGH format: table exit-code: 0 # ------------------------------------------------- # 7️⃣ DOCKER LOGIN + PUSH # ------------------------------------------------- docker-login-push-image: runs-on: ubuntu-latest needs: trivy-image-scan steps: - uses: actions/checkout@v4 - name: Download Image Artifact uses: actions/download-artifact@v4 with: name: docker-image - name: Load Docker Image run: docker load -i image.tar - name: Docker Hub Login uses: docker/login-action@v3 with: username: ${{ secrets.DOCKER_USER }} password: ${{ secrets.DOCKER_PASSWORD }} - name: Push Image run: | docker push $IMAGE_NAME:$IMAGE_TAG # ------------------------------------------------- # 3️⃣ SETUP JAVA + GRADLE BUILD # ------------------------------------------------- setup-java: runs-on: ubuntu-latest needs: checkout steps: - uses: actions/checkout@v4 - name: Setup Java uses: actions/setup-java@v4 with: distribution: temurin java-version: 20 - name: Setup Gradle uses: gradle/actions/setup-gradle@v4 - name: Build with Gradle working-directory: src/adservice run: | chmod +x ./gradlew ./gradlew installDist # ------------------------------------------------- # 4️⃣ VALIDATE GRADLE WRAPPER # ------------------------------------------------- validate-gradle: name: Validate Gradle Wrapper runs-on: ubuntu-latest needs: setup-java steps: - uses: actions/checkout@v4 - name: Validate Wrapper uses: gradle/wrapper-validation-action@v2 with: working-directory: src/cartservice # ------------------------------------------------- # 5️⃣ DOCKER IMAGE BUILD # ------------------------------------------------- docker-image-build: runs-on: ubuntu-latest needs: validate-gradle steps: - uses: actions/checkout@v4 - name: Build Docker Image run: | cd src/cartservice docker build -t $IMAGE_NAME:$IMAGE_TAG . - name: Save Docker Image run: | docker save $IMAGE_NAME:$IMAGE_TAG -o image.tar - name: Upload Docker Image Artifact uses: actions/upload-artifact@v4 with: name: docker-image path: image.tar # ------------------------------------------------- # 6️⃣ TRIVY IMAGE SCAN # ------------------------------------------------- trivy-image-scan: runs-on: ubuntu-latest needs: docker-image-build steps: - uses: actions/checkout@v4 - name: Download Image Artifact uses: actions/download-artifact@v4 with: name: docker-image - name: Load Docker Image run: docker load -i image.tar - name: Trivy Scan uses: aquasecurity/trivy-action@0.28.0 with: image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} scanners: vuln severity: CRITICAL,HIGH format: table exit-code: 0 # ------------------------------------------------- # 7️⃣ DOCKER LOGIN + PUSH # ------------------------------------------------- docker-login-push-image: runs-on: ubuntu-latest needs: trivy-image-scan steps: - uses: actions/checkout@v4 - name: Download Image Artifact uses: actions/download-artifact@v4 with: name: docker-image - name: Load Docker Image run: docker load -i image.tar - name: Docker Hub Login uses: docker/login-action@v3 with: username: ${{ secrets.DOCKER_USER }} password: ${{ secrets.DOCKER_PASSWORD }} - name: Push Image run: | docker push $IMAGE_NAME:$IMAGE_TAG syntax error
+name: CI Pipeline (Split Jobs)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: sharuelement/adservice
+  IMAGE_TAG: ${{ github.sha }}
+
+# -------------------------------------------------
+# 1️⃣ CHECKOUT
+# -------------------------------------------------
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+  # -------------------------------------------------
+  # 2️⃣ LINT
+  # -------------------------------------------------
+  lint:
+    runs-on: ubuntu-latest
+    needs: checkout
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run DevSkim
+        uses: microsoft/DevSkim-Action@v1
+
+      - name: Upload DevSkim Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: devskim-results.sarif
+
+  # -------------------------------------------------
+  # 3️⃣ SETUP JAVA + GRADLE BUILD
+  # -------------------------------------------------
+  setup-java:
+    runs-on: ubuntu-latest
+    needs: checkout
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 20
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build with Gradle
+        working-directory: src/adservice
+        run: |
+          chmod +x ./gradlew
+          ./gradlew installDist
+
+  # -------------------------------------------------
+  # 4️⃣ VALIDATE GRADLE WRAPPER
+  # -------------------------------------------------
+  validate-gradle:
+    name: Validate Gradle Wrapper
+    runs-on: ubuntu-latest
+    needs: setup-java
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Wrapper
+        uses: gradle/wrapper-validation-action@v2
+        with:
+          working-directory: src/adservice
+
+  # -------------------------------------------------
+  # 5️⃣ DOCKER IMAGE BUILD
+  # -------------------------------------------------
+  docker-image-build:
+    runs-on: ubuntu-latest
+    needs: validate-gradle
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          cd src/adservice
+          docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+      - name: Save Docker Image
+        run: docker save $IMAGE_NAME:$IMAGE_TAG -o image.tar
+
+      - name: Upload Docker Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar
+
+  # -------------------------------------------------
+  # 6️⃣ TRIVY IMAGE SCAN
+  # -------------------------------------------------
+  trivy-image-scan:
+    runs-on: ubuntu-latest
+    needs: docker-image-build
+    steps:
+      - name: Download Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load Docker Image
+        run: docker load -i image.tar
+
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          format: table
+          exit-code: 0
+
+  # -------------------------------------------------
+  # 7️⃣ DOCKER LOGIN + PUSH
+  # -------------------------------------------------
+  docker-login-push-image:
+    runs-on: ubuntu-latest
+    needs: trivy-image-scan
+    steps:
+      - name: Download Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load Docker Image
+        run: docker load -i image.tar
+
+      - name: Docker Hub Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Image
+        run: docker push $IMAGE_NAME:$IMAGE_TAG
