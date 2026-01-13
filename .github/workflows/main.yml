@@ -45,7 +45,7 @@ jobs:
   # -------------------------------------------------
   setup-java:
     runs-on: ubuntu-latest
-    needs: checkout
+    needs: lint
     steps:
       - uses: actions/checkout@v4
 
