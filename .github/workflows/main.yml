@@ -157,7 +157,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java -cartservice
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -176,13 +176,13 @@ jobs:
   # 4️⃣ VALIDATE GRADLE WRAPPER
   # -------------------------------------------------
   validate-gradle:
-    name: Validate Gradle Wrapper
+    name: Validate Gradle Wrapper - cartservice
     runs-on: ubuntu-latest
     needs: setup-java
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate Wrapper
+      - name: Validate Wrapper -cartservice
         uses: gradle/wrapper-validation-action@v2
         with:
           working-directory: src/cartservice/src
@@ -196,7 +196,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Docker Image
+      - name: Build Docker Image -cartservice
         run: |
           cd src/cartservice/src
           docker build -t $IMAGE_NAME:$IMAGE_TAG .
@@ -217,7 +217,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker-image-build
     steps:
-      - name: Download Image Artifact
+      - name: Download Image Artifact -cartservice
         uses: actions/download-artifact@v4
         with:
           name: docker-image
@@ -241,7 +241,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: trivy-image-scan
     steps:
-      - name: Download Image Artifact
+      - name: Download Image Artifact - cartservice
         uses: actions/download-artifact@v4
         with:
           name: docker-image
